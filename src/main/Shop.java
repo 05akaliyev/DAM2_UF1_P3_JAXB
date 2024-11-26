@@ -7,7 +7,7 @@ import model.Amount;
 import model.Client;
 import model.Employee;
 import dao.Dao;
-import dao.DaoImplFile;
+import dao.DaoImplJaxb;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,11 +19,11 @@ public class Shop {
     private ArrayList<Sale> sales;
     private Dao dao;
 
-    final static double TAX_RATE = 1.04;
+    public static final double TAX_RATE = 1.04;
 
     public Shop() {
-        // Initialize the DAO with DaoImplFile for file-based inventory management
-        this.dao = new DaoImplFile();
+        // Initialize the DAO with DaoImplJaxb
+        this.dao = new DaoImplJaxb();
         this.inventory = new ArrayList<>();
         this.sales = new ArrayList<>();
     }
@@ -55,25 +55,25 @@ public class Shop {
     public static void main(String[] args) {
         Shop shop = new Shop();
 
-        // Load inventory from the file system using DaoImplFile
+        // Load inventory from the XML file using DaoImplJaxb
         shop.loadInventory();
 
         // Start employee session
         shop.initSession();
 
         Scanner scanner = new Scanner(System.in);
-        int opcion;
+        int option;
         boolean exit = false;
 
         do {
             System.out.println("\n===========================");
-            System.out.println("Menu principal miTienda.com");
+            System.out.println("Main Menu MiTienda.com");
             System.out.println("===========================");
             System.out.println("0) Exportar inventario");
             System.out.println("1) Contar caja");
             System.out.println("2) Añadir producto");
             System.out.println("3) Añadir stock");
-            System.out.println("4) Marcar producto proxima caducidad");
+            System.out.println("4) Marcar producto próxima caducidad");
             System.out.println("5) Ver inventario");
             System.out.println("6) Venta");
             System.out.println("7) Ver ventas");
@@ -81,9 +81,10 @@ public class Shop {
             System.out.println("9) Eliminar producto");
             System.out.println("10) Salir programa");
             System.out.print("Seleccione una opción: ");
-            opcion = scanner.nextInt();
+            option = scanner.nextInt();
+            scanner.nextLine(); // Consume newline
 
-            switch (opcion) {
+            switch (option) {
                 case 0:
                     boolean success = shop.writeInventory();
                     if (success) {
@@ -96,7 +97,7 @@ public class Shop {
                     shop.showCash();
                     break;
                 case 2:
-                    shop.addProduct();
+                    shop.addProductViaConsole();
                     break;
                 case 3:
                     shop.addStock();
@@ -123,17 +124,22 @@ public class Shop {
                     System.out.println("Cerrando programa ...");
                     exit = true;
                     break;
+                default:
+                    System.out.println("Opción no válida. Por favor, seleccione una opción del 0 al 10.");
+                    break;
             }
         } while (!exit);
+
+        scanner.close();
     }
 
     private void initSession() {
         Employee employee = new Employee("test");
         boolean logged = false;
+        Scanner scanner = new Scanner(System.in);
 
         do {
-            Scanner scanner = new Scanner(System.in);
-            System.out.println("Introduzca numero de empleado: ");
+            System.out.println("Introduzca número de empleado: ");
             int employeeId = scanner.nextInt();
             System.out.println("Introduzca contraseña: ");
             String password = scanner.next();
@@ -142,38 +148,39 @@ public class Shop {
             if (logged) {
                 System.out.println("Login correcto.");
             } else {
-                System.out.println("Usuario o password incorrectos.");
+                System.out.println("Usuario o contraseña incorrectos.");
             }
         } while (!logged);
     }
 
     public void loadInventory() {
-        // Load inventory using DaoImplFile
+        // Load inventory using DaoImplJaxb
         this.inventory = dao.getInventory();
-        System.out.println("Inventario cargado correctamente.");
+        if (this.inventory != null) {
+            // Initialize products
+            for (Product product : inventory) {
+                product.initializeProduct();
+            }
+            System.out.println("Inventario cargado correctamente.");
+        } else {
+            System.out.println("Error al cargar el inventario.");
+        }
     }
 
     public boolean writeInventory() {
-        // Write inventory using DaoImplFile
-        return dao.writeInventory(inventory);
+        // Write inventory using DaoImplJaxb
+        boolean success = dao.writeInventory(inventory);
+        if (!success) {
+            System.out.println("Error al exportar el inventario.");
+        }
+        return success;
     }
 
     private void showCash() {
-        System.out.println("Dinero actual: " + cash);
+        System.out.println("Dinero actual en caja: " + cash);
     }
 
-    // Updated addProduct method to accept a Product object directly
-    public void addProduct(Product product) {
-        if (isInventoryFull()) {
-            System.out.println("No se pueden añadir más productos.");
-            return;
-        }
-        inventory.add(product);
-        System.out.println("Producto añadido: " + product);
-    }
-
-    // Existing method to add a product via input (optional)
-    public void addProduct() {
+    public void addProductViaConsole() {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Nombre: ");
         String name = scanner.nextLine();
@@ -183,6 +190,12 @@ public class Shop {
         int stock = scanner.nextInt();
 
         Product product = new Product(name, new Amount(wholesalerPrice), true, stock);
+        addProduct(product);
+        System.out.println("Producto añadido: " + product);
+    }
+
+    // Added method to add a product to the inventory
+    public void addProduct(Product product) {
         inventory.add(product);
         System.out.println("Producto añadido: " + product);
     }
@@ -190,7 +203,7 @@ public class Shop {
     public void removeProduct() {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Seleccione un nombre de producto: ");
-        String name = scanner.next();
+        String name = scanner.nextLine();
         Product product = findProduct(name);
 
         if (product != null) {
@@ -204,7 +217,7 @@ public class Shop {
     public void addStock() {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Seleccione un nombre de producto: ");
-        String name = scanner.next();
+        String name = scanner.nextLine();
         Product product = findProduct(name);
 
         if (product != null) {
@@ -220,12 +233,14 @@ public class Shop {
     private void setExpired() {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Seleccione un nombre de producto: ");
-        String name = scanner.next();
+        String name = scanner.nextLine();
         Product product = findProduct(name);
 
         if (product != null) {
             product.expire();
-            System.out.println("Producto marcado como caducado: " + product.getPublicPrice());
+            System.out.println("Producto marcado como próxima caducidad. Nuevo precio público: " + product.getPublicPrice());
+        } else {
+            System.out.println("Producto no encontrado.");
         }
     }
 
@@ -238,7 +253,7 @@ public class Shop {
 
     public void sale() {
         Scanner scanner = new Scanner(System.in);
-        System.out.println("Realizar venta, escribir nombre cliente: ");
+        System.out.println("Realizar venta, escribir nombre del cliente: ");
         String clientName = scanner.nextLine();
         Client client = new Client(clientName);
 
@@ -268,7 +283,7 @@ public class Shop {
         }
 
         totalAmount.setValue(totalAmount.getValue() * TAX_RATE);
-        System.out.println("Total venta: " + totalAmount);
+        System.out.println("Total venta (con impuestos): " + totalAmount);
 
         if (!client.pay(totalAmount)) {
             System.out.println("El cliente debe: " + client.getBalance());
@@ -301,10 +316,5 @@ public class Shop {
             }
         }
         return null;
-    }
-
-    // Helper method to check if inventory is full
-    public boolean isInventoryFull() {
-        return inventory.size() >= 10;  // Assuming maximum inventory size is 10
     }
 }

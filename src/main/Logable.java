@@ -1,3 +1,4 @@
+// Logable.java
 package main;
 
 public interface Logable {

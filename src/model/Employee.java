@@ -1,81 +1,72 @@
+// Employee.java
 package model;
 
-import main.Logable;
-import dao.*;
+public class Employee extends Person {
+    private int employeeId;
+    private String password;
 
-public class Employee extends Person implements Logable{
-	private int employeeId;
-	private String password;
-	// connection using JDBC SQL
-	private Dao dao = new DaoImplJDBC();
-	
-//	public static final int USER = 123;
-//	public static final String PASSWORD = "test";
-	
-	public Employee(String name) {
-		super(name);
-	}
-	
-	public Employee(int employeeId, String name, String password) {
-		super(name);
-		this.employeeId = employeeId;
-		this.password = password;
-	}
-	
-	public Employee() {
-		super();
-	}
-	
-	/**
-	 * @return the employeeId
-	 */
-	public int getEmployeeId() {
-		return employeeId;
-	}
+    // Constructors
+    public Employee(String name) {
+        super(name);
+    }
 
-	/**
-	 * @param employeeId the employeeId to set
-	 */
-	public void setEmployeeId(int employeeId) {
-		this.employeeId = employeeId;
-	}
+    public Employee(int employeeId, String name, String password) {
+        super(name);
+        this.employeeId = employeeId;
+        this.password = password;
+    }
 
-	/**
-	 * @return the password
-	 */
-	public String getPassword() {
-		return password;
-	}
+    public Employee() {
+        super();
+    }
 
-	/**
-	 * @param password the password to set
-	 */
-	public void setPassword(String password) {
-		this.password = password;
-	}
+    /**
+     * @return the employeeId
+     */
+    public int getEmployeeId() {
+        return employeeId;
+    }
 
-	/**
-	 * @param user from application, password from application
-	 * @return true if credentials are correct or false if not
-	 */
-	@Override
-	public boolean login(int user, String password) {
-//		if (USER == user && PASSWORD.equals(password)) {
-//			return true;
-//		} 
-		boolean success = false;
-		
-		// connect to data
-		dao.connect();
-		
-		// get employee data
-		if(dao.getEmployee(user, password) != null) {
-			success =  true;
-		}
-		
-		// disconnect data
-		dao.disconnect();
-		return success;
-	}
+    /**
+     * @param employeeId the employeeId to set
+     */
+    public void setEmployeeId(int employeeId) {
+        this.employeeId = employeeId;
+    }
 
+    /**
+     * @return the password
+     */
+    public String getPassword() {
+        return password;
+    }
+
+    /**
+     * @param password the password to set
+     */
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    /**
+     * Simplified login method without database authentication.
+     *
+     * @param user     from application
+     * @param password from application
+     * @return true if credentials are correct or false if not
+     */
+    public boolean login(int user, String password) {
+        // Hardcoded credentials
+        int hardcodedUserId = 123;
+        String hardcodedPassword = "test";
+
+        if (user == hardcodedUserId && password.equals(hardcodedPassword)) {
+            this.employeeId = user;
+            this.password = password;
+            this.setName("Default Employee"); // Set a default name
+            return true;
+        } else {
+            return false;
+        }
+    }
 }

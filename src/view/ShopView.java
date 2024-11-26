@@ -173,3 +173,4 @@ public class ShopView extends JFrame implements ActionListener, KeyListener {
         dialog.setVisible(true);
     }
 }
+

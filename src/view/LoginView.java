@@ -1,3 +1,4 @@
+// LoginView.java
 package view;
 
 import java.awt.EventQueue;

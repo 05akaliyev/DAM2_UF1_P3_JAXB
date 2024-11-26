@@ -1,32 +1,47 @@
 package model;
 
-import java.text.DecimalFormat;
+import javax.xml.bind.annotation.*;
 
+@XmlAccessorType(XmlAccessType.FIELD)
 public class Amount {
-	private double value;	
-	private String currency="€";
-	
-	private static final DecimalFormat df = new DecimalFormat("0.00");
-	
-	public Amount(double value) {
-		super();
-		this.value = value;
-	}
 
-	public double getValue() {
-		return value;
-	}
+    @XmlValue
+    private double value;
 
-	public void setValue(double value) {
-		this.value = value;
-	}
+    @XmlAttribute
+    private String currency;
 
-	@Override
-	public String toString() {
-		return df.format(value) + currency;
-	}
-	
-	
+    // No-arg constructor for JAXB
+    public Amount() {
+        this.currency = "€";
+    }
 
-	
+    public Amount(double value) {
+        this.value = value;
+        this.currency = "€";
+    }
+
+    // Getters and Setters
+
+    public double getValue() {
+        return value;
+    }
+
+    public void setValue(double value) {
+        this.value = value;
+    }
+
+    public String getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
+    }
+
+    // toString method
+    @Override
+    public String toString() {
+        return value + currency;
+    }
 }

@@ -1,3 +1,4 @@
+// CashView.java
 package view;
 
 import java.awt.BorderLayout;

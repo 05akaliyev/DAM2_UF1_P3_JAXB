@@ -1,102 +1,128 @@
 package model;
 
+import javax.xml.bind.annotation.*;
+
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlRootElement(name = "product")
 public class Product {
-	private int id;
+
+    // Fields
+    @XmlAttribute
+    private int id;
+
+    @XmlAttribute
     private String name;
-    private Amount publicPrice;
+
+    @XmlElement
+    private Boolean available;
+
+    @XmlElement
     private Amount wholesalerPrice;
-    private boolean available;
+
+    @XmlElement
+    private Amount publicPrice;
+
+    @XmlElement
     private int stock;
-    private static int totalProducts;
-    
-    public final static double EXPIRATION_RATE=0.60;
-    
-	public Product(String name, Amount wholesalerPrice, boolean available, int stock) {
-		super();
-		this.id = totalProducts+1;
-		this.name = name;
-		this.wholesalerPrice = wholesalerPrice;
-		this.publicPrice = new Amount(wholesalerPrice.getValue() * 2);
-		this.available = available;
-		this.stock = stock;
-		totalProducts++;
-	}
 
-	public int getId() {
-		return id;
-	}
+    // Static variable for generating IDs
+    private static int totalProducts = 0;
 
-	public void setId(int id) {
-		this.id = id;
-	}
+    // No-arg constructor for JAXB
+    public Product() {
+    }
 
-	public String getName() {
-		return name;
-	}
+    // Constructor
+    public Product(String name, Amount wholesalerPrice, Boolean available, int stock) {
+        this.name = name;
+        this.wholesalerPrice = wholesalerPrice;
+        this.available = available;
+        this.stock = stock;
+        this.publicPrice = new Amount(wholesalerPrice.getValue() * 2);
+        initializeProduct();
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    // Initialize missing fields after unmarshalling or when creating new products
+    public void initializeProduct() {
+        // Assign ID
+        this.id = ++totalProducts;
 
-	
+        // Set available to true if null
+        if (this.available == null) {
+            this.available = true;
+        }
 
-	public Amount getPublicPrice() {
-		return publicPrice;
-	}
+        // Calculate publicPrice if not set
+        if (this.publicPrice == null && this.wholesalerPrice != null) {
+            double wholesalerValue = this.wholesalerPrice.getValue();
+            this.publicPrice = new Amount(wholesalerValue * 2);
+        }
+    }
 
-	public void setPublicPrice(Amount publicPrice) {
-		this.publicPrice = publicPrice;
-	}
+    // Add the expire() method
+    public void expire() {
+        // Logic for expiring a product
+        // For example, reduce the public price by 50%
+        if (publicPrice != null) {
+            double newPrice = publicPrice.getValue() * 0.5; // Reduce price by 50%
+            publicPrice.setValue(newPrice);
+        }
+    }
 
-	public Amount getWholesalerPrice() {
-		return wholesalerPrice;
-	}
+    // Getters and Setters
 
-	public void setWholesalerPrice(Amount wholesalerPrice) {
-		this.wholesalerPrice = wholesalerPrice;
-	}
+    public int getId() {
+        return id;
+    }
 
-	public boolean isAvailable() {
-		return available;
-	}
+    // No setter for id to prevent changing it after assignment
 
-	public void setAvailable(boolean available) {
-		this.available = available;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public int getStock() {
-		return stock;
-	}
-
-	public void setStock(int stock) {
-		this.stock = stock;
-	}
-
-	public static int getTotalProducts() {
-		return totalProducts;
-	}
-
-	public static void setTotalProducts(int totalProducts) {
-		Product.totalProducts = totalProducts;
-	}
-	
-	public void expire() {
-		this.publicPrice.setValue(this.getPublicPrice().getValue()*EXPIRATION_RATE); ;
-	}
-
-	@Override
-	public String toString() {
-		return "Product [name=" + name + ", publicPrice=" + publicPrice + ", wholesalerPrice=" + wholesalerPrice
-				+ ", available=" + available + ", stock=" + stock + "]";
-	}
-
-	
-	
-	
-	
-	
+    public void setName(String name) {
+        this.name = name;
+    }
 
     
+    public Boolean isAvailable() {
+        return available;
+    }
 
-    
+    public void setAvailable(Boolean available) {
+        this.available = available;
+    }
+
+    public Amount getWholesalerPrice() {
+        return wholesalerPrice;
+    }
+
+    public void setWholesalerPrice(Amount wholesalerPrice) {
+        this.wholesalerPrice = wholesalerPrice;
+    }
+
+    public Amount getPublicPrice() {
+        return publicPrice;
+    }
+
+    public void setPublicPrice(Amount publicPrice) {
+        this.publicPrice = publicPrice;
+    }
+
+    public int getStock() {
+        return stock;
+    }
+
+    public void setStock(int stock) {
+        this.stock = stock;
+    }
+
+    // toString method
+    @Override
+    public String toString() {
+        return "Product [id=" + id + ", name=" + name + ", available=" + available +
+               ", wholesalerPrice=" + wholesalerPrice + ", publicPrice=" + publicPrice +
+               ", stock=" + stock + "]";
+    }
 }
